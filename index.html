@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ 弥生・古墳時代クイズ ⚡</title>
+<style>
+  :root {
+    --primary: #FF8C42;
+    --secondary: #4A90D9;
+    --success: #5BAD72;
+    --danger: #E74C3C;
+    --bg: #FFF8F0;
+    --card: #FFFFFF;
+    --text: #333;
+    --shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+    background: linear-gradient(135deg, #FFF8F0 0%, #E8F4FF 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    color: var(--text);
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-size: 1.5rem;
+    color: var(--primary);
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.08);
+  }
+  header p { font-size: 0.85rem; color: #888; margin-top: 4px; }
+
+  /* ===== PROGRESS ===== */
+  .progress-wrap {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .progress-bar-bg {
+    flex: 1;
+    height: 12px;
+    background: #E0E0E0;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), #FF6B35);
+    border-radius: 999px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-label {
+    font-size: 0.8rem;
+    color: #888;
+    white-space: nowrap;
+  }
+
+  /* ===== SCORE CHIPS ===== */
+  .score-chips {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: bold;
+  }
+  .chip.correct { background: #E8F7EC; color: var(--success); }
+  .chip.wrong   { background: #FDEDEC; color: var(--danger); }
+
+  /* ===== CARD ===== */
+  .card {
+    width: 100%;
+    max-width: 500px;
+    background: var(--card);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 28px 24px 24px;
+    position: relative;
+    transition: transform 0.3s;
+  }
+  .card.pop {
+    animation: pop 0.3s ease;
+  }
+  @keyframes pop {
+    0%   { transform: scale(0.95); opacity: 0; }
+    100% { transform: scale(1);    opacity: 1; }
+  }
+
+  .badge {
+    position: absolute;
+    top: -10px; left: 20px;
+    background: var(--primary);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 3px 12px;
+    border-radius: 999px;
+    letter-spacing: 0.05em;
+  }
+
+  .q-number {
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-bottom: 6px;
+  }
+
+  .q-text {
+    font-size: 1.05rem;
+    font-weight: bold;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    min-height: 48px;
+  }
+
+  /* ===== CHOICES ===== */
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .choice-btn {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #E0E0E0;
+    border-radius: 12px;
+    background: white;
+    font-size: 0.95rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--secondary);
+    background: #F0F7FF;
+    transform: translateX(4px);
+  }
+  .choice-btn.selected-correct {
+    border-color: var(--success);
+    background: #E8F7EC;
+    color: var(--success);
+    font-weight: bold;
+  }
+  .choice-btn.selected-wrong {
+    border-color: var(--danger);
+    background: #FDEDEC;
+    color: var(--danger);
+    font-weight: bold;
+  }
+  .choice-btn.show-correct {
+    border-color: var(--success);
+    background: #E8F7EC;
+    color: var(--success);
+  }
+  .choice-btn:disabled { cursor: default; }
+
+  .choice-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+  }
+
+  /* ===== TEXT INPUT ===== */
+  .text-input-wrap { margin-bottom: 12px; }
+  .text-input-wrap input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #E0E0E0;
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+  }
+  .text-input-wrap input:focus { border-color: var(--secondary); }
+  .text-input-wrap input.correct { border-color: var(--success); background: #E8F7EC; }
+  .text-input-wrap input.wrong   { border-color: var(--danger);  background: #FDEDEC; }
+  /* ===== HINT BUTTON ===== */
+  .hint-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    padding: 6px 14px;
+    background: #FFFDE7;
+    border: 1.5px dashed #F9A825;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    color: #E67E00;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    transition: background 0.2s;
+  }
+  .hint-btn:hover { background: #FFF8CC; }
+  .hint-btn:disabled { opacity: 0.5; cursor: default; }
+  .hint-reveal {
+    display: none;
+    margin-top: 6px;
+    padding: 8px 12px;
+    background: #FFFDE7;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: #8a6000;
+    border-left: 3px solid #F9A825;
+    animation: slideIn 0.25s ease;
+  }
+  .hint-reveal.show { display: block; }
+
+  /* ===== FEEDBACK ===== */
+  .feedback {
+    display: none;
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .feedback.correct { background: #E8F7EC; color: #2E7D32; border-left: 4px solid var(--success); }
+  .feedback.wrong   { background: #FDEDEC; color: #C0392B; border-left: 4px solid var(--danger); }
+  .feedback.show { display: block; }
+
+  .answer-line { font-weight: bold; font-size: 1.0rem; }
+  .explain-line { margin-top: 6px; font-size: 0.85rem; color: #555; }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), #FF6B35);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255,140,66,0.4);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(255,140,66,0.5); }
+  .btn-secondary {
+    background: var(--secondary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(74,144,217,0.35);
+  }
+  .btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+  /* ===== RESULT SCREEN ===== */
+  #result-screen {
+    display: none;
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 32px 24px;
+    text-align: center;
+    animation: pop 0.5s ease;
+  }
+  .result-emoji { font-size: 4rem; margin-bottom: 12px; }
+  .result-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 8px; color: var(--primary); }
+  .result-score { font-size: 3rem; font-weight: bold; color: var(--text); margin: 12px 0; }
+  .result-score span { font-size: 1.2rem; color: #aaa; font-weight: normal; }
+  .result-msg { font-size: 0.95rem; color: #666; margin-bottom: 20px; line-height: 1.6; }
+  .stars { font-size: 2rem; letter-spacing: 4px; margin-bottom: 20px; }
+  .result-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    text-align: left;
+  }
+  .result-table th {
+    background: #F5F5F5;
+    padding: 8px 12px;
+    font-weight: bold;
+    color: #555;
+  }
+  .result-table td { padding: 8px 12px; border-bottom: 1px solid #F0F0F0; }
+  .result-table .ok  { color: var(--success); font-weight: bold; }
+  .result-table .bad { color: var(--danger);  font-weight: bold; }
+
+  /* ===== INTRO SCREEN ===== */
+  #intro-screen {
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .intro-emoji { font-size: 3.5rem; margin-bottom: 12px; }
+  .intro-title { font-size: 1.4rem; font-weight: bold; color: var(--primary); margin-bottom: 8px; }
+  .intro-sub { color: #666; font-size: 0.9rem; margin-bottom: 20px; line-height: 1.7; }
+  .intro-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 24px; }
+  .tag {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: bold;
+  }
+  .tag-orange { background: #FFF0E0; color: var(--primary); }
+  .tag-blue   { background: #E8F4FF; color: var(--secondary); }
+  .tag-green  { background: #E8F7EC; color: var(--success); }
+</style>
+</head>
+<body>
+
+<!-- ===== INTRO ===== -->
+<div id="intro-screen">
+  <div class="intro-emoji">🏺</div>
+  <div class="intro-title">弥生・古墳時代クイズ</div>
+  <div class="intro-sub">
+    塾のテストから出題！<br>
+    全<strong>18問</strong>に挑戦してみよう🔥<br>
+    隙間時間でサクッとできるよ！
+  </div>
+  <div class="intro-tags">
+    <span class="tag tag-orange">🎯 全18問</span>
+    <span class="tag tag-blue">⏱ 約5分</span>
+    <span class="tag tag-green">📚 小5 社会</span>
+  </div>
+  <button class="btn btn-primary" onclick="startQuiz()">スタート！ 🚀</button>
+</div>
+
+<!-- ===== QUIZ ===== -->
+<div id="quiz-screen" style="display:none; width:100%; max-width:500px;">
+  <header>
+    <h1>🏺 弥生・古墳クイズ</h1>
+    <p>小5 社会 ｜ 3月テストより</p>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="progress-label" id="progress-label">0/12</div>
+  </div>
+
+  <div class="score-chips">
+    <div class="chip correct">✅ 正解 <span id="correct-count">0</span></div>
+    <div class="chip wrong">❌ ミス <span id="wrong-count">0</span></div>
+  </div>
+
+  <div class="card" id="quiz-card">
+    <div class="badge" id="q-badge">大問1</div>
+    <div class="q-number" id="q-number">問1 / 12</div>
+    <div class="q-text" id="q-text"></div>
+    <div id="choices-wrap"></div>
+    <div id="text-input-wrap" style="display:none">
+      <div class="text-input-wrap">
+        <input type="text" id="text-answer" placeholder="ここに答えを入力…" autocomplete="off">
+        <button class="hint-btn" id="hint-btn" onclick="showHint()">💡 ヒントを見る</button>
+        <div class="hint-reveal" id="hint-reveal"></div>
+      </div>
+      <button class="btn btn-secondary" id="submit-btn" onclick="submitText()" style="margin-bottom:12px;">答え合わせ ✔</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" style="display:none;">
+      次の問題へ →
+    </button>
+  </div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="result-screen">
+  <div class="result-emoji" id="result-emoji">🎉</div>
+  <div class="result-title">クイズ完了！</div>
+  <div class="stars" id="result-stars">⭐⭐⭐</div>
+  <div class="result-score" id="result-score">0<span> / 12点</span></div>
+  <div class="result-msg" id="result-msg"></div>
+  <table class="result-table" id="result-table">
+    <thead><tr><th>#</th><th>問題</th><th>結果</th></tr></thead>
+    <tbody id="result-tbody"></tbody>
+  </table>
+  <button class="btn btn-primary" onclick="restartQuiz()" style="margin-bottom:10px;">もう一度やる 🔄</button>
+  <button class="btn btn-secondary" onclick="reviewWrong()" id="review-btn" style="margin-top:8px;">間違えた問題だけやる 📝</button>
+</div>
+
+<script>
+// ==============================
+// 問題データ
+// ==============================
+const ALL_QUESTIONS = [
+  // ===== 大問1 =====
+  {
+    id: 1,
+    section: "大問1",
+    text: "3世紀の日本にあったとされる邪馬台国の女王は誰ですか？",
+    type: "text",
+    answer: "卑弥呼",
+    hint: "漢字2文字。読み方は「ひみこ」",
+    explanation: "卑弥呼は3世紀ごろの邪馬台国の女王。中国の歴史書「魏志倭人伝」に記録されています。"
+  },
+  {
+    id: 2,
+    section: "大問1",
+    text: "卑弥呼がいたとされる記述がある中国の歴史書の名前はどれですか？",
+    type: "choice",
+    choices: ["漢書「地理志」", "後漢書「東夷伝」", "魏志倭人伝", "好太王の碑"],
+    answer: "魏志倭人伝",
+    explanation: "「魏志倭人伝」は3世紀の中国（魏）の歴史書で、邪馬台国や卑弥呼のことが詳しく書かれています。"
+  },
+  {
+    id: 3,
+    section: "大問1",
+    text: "卑弥呼が中国（魏）の皇帝から与えられた称号は何ですか？",
+    type: "choice",
+    choices: ["漢委奴国王", "親魏倭王", "日本国王", "大和大王"],
+    answer: "親魏倭王",
+    explanation: "卑弥呼は魏の皇帝から「親魏倭王」の称号と銅鏡100枚などを授けられました。"
+  },
+  {
+    id: 4,
+    section: "大問1",
+    text: "古墳時代につくられた古墳のうち、前が四角・後ろが丸い形の古墳を何といいますか？",
+    type: "text",
+    answer: "前方後円墳",
+    hint: "漢字5文字。「前の方が四角、後ろが円」のヒント通りに並べよう",
+    explanation: "前方後円墳は日本独自の古墳の形。最大のものは大阪府堺市の大仙（仁徳天皇陵）古墳です。"
+  },
+  {
+    id: 5,
+    section: "大問1",
+    text: "古墳時代に朝鮮半島からやってきて、漢字・機織り・仏教などをもたらした人たちを何とよびますか？",
+    type: "text",
+    answer: "渡来人",
+    hint: "漢字3文字。「海を渡って来た人」という意味",
+    explanation: "渡来人は朝鮮半島や中国から日本に移り住んだ人々。漢字・仏教・機織りなど多くの文化を伝えました。"
+  },
+  {
+    id: 6,
+    section: "大問1",
+    text: "渡来人がもたらした、インドのシャカの教えをまとめた宗教は何ですか？",
+    type: "choice",
+    choices: ["神道", "キリスト教", "仏教", "ヒンドゥー教"],
+    answer: "仏教",
+    explanation: "仏教はインドのシャカが開いた宗教。渡来人によって朝鮮半島を経て日本に伝わりました。"
+  },
+  // ===== 大問2 =====
+  {
+    id: 7,
+    section: "大問2",
+    text: "弥生時代、農作を神々に祈る祭器として使われた「銅」でできた楽器のような形のものを何といいますか？",
+    type: "choice",
+    choices: ["銅鏡", "銅鐸", "銅矛", "銅剣"],
+    answer: "銅鐸",
+    explanation: "銅鐸（どうたく）は弥生時代の青銅器製の祭器。鐘のような形で、農耕の祭りに使われたと考えられています。"
+  },
+  {
+    id: 8,
+    section: "大問2",
+    text: "弥生時代、収穫した米を保存するために使われた、地面から高く柱を立てた建物を何といいますか？",
+    type: "text",
+    answer: "高床式倉庫",
+    hint: "漢字6文字。「床が高い倉庫」という意味",
+    explanation: "高床式倉庫（たかゆかしきそうこ）は湿気やネズミから米を守るための工夫。弥生時代の代表的な建物です。"
+  },
+  {
+    id: 9,
+    section: "大問2",
+    text: "弥生時代の土器を何といいますか？時代の名前が入った漢字2文字で答えなさい。",
+    type: "text",
+    answer: "弥生土器",
+    hint: "「弥生」＋「土器」。この時代の名前がついた土器だよ",
+    explanation: "弥生土器は縄文土器より薄くてかたい。東京の弥生（やよい）という地名で最初に発見されたためこの名前がつきました。"
+  },
+  {
+    id: 10,
+    section: "大問2",
+    text: "弥生時代の生活のようすが発掘調査によって明らかになっている、静岡県にある遺跡の名前はどれですか？",
+    type: "choice",
+    choices: ["三内丸山遺跡", "登呂遺跡", "岩宿遺跡", "吉野ケ里遺跡"],
+    answer: "登呂遺跡",
+    explanation: "登呂遺跡（とろいせき）は静岡県にある弥生時代の遺跡。水田跡や高床式倉庫の跡が発見されています。（吉野ケ里遺跡は佐賀県）"
+  },
+  {
+    id: 11,
+    section: "大問2",
+    text: "弥生時代、稲の穂をつみ取るために使われた、石でできた道具を何といいますか？",
+    type: "text",
+    answer: "石包丁",
+    hint: "漢字3文字。台所にある刃物に似た形の石の道具",
+    explanation: "石包丁（いしぼうちょう）は弥生時代の稲作道具。三日月形の石の刃で穂先だけをつみ取りました。"
+  },
+  // ===== 大問3 =====
+  {
+    id: 12,
+    section: "大問3",
+    text: "大和政権のリーダーのことを何といいますか？漢字2文字で答えなさい。",
+    type: "text",
+    answer: "大王",
+    hint: "漢字2文字。読み方は「おおきみ」",
+    explanation: "大王（おおきみ）は大和政権のリーダー。後の天皇制の原型となりました。"
+  },
+  {
+    id: 13,
+    section: "大問3",
+    text: "2019年に世界文化遺産に登録された「百舌鳥・古市古墳群」のなかで最大の古墳（大仙古墳）がある都道府県はどこですか？",
+    type: "choice",
+    choices: ["奈良県", "京都府", "兵庫県", "大阪府"],
+    answer: "大阪府",
+    explanation: "大仙古墳（仁徳天皇陵）は大阪府堺市にあります。エジプトのピラミッド、中国の秦の始皇帝陵と並ぶ世界最大級の墓です。"
+  },
+  {
+    id: 14,
+    section: "大問3",
+    text: "大和政権が4世紀末に朝鮮半島に軍を送ったとき、大和政権と同盟を結んでいた国はどれですか？",
+    type: "choice",
+    choices: ["新羅", "高句麗", "百済", "唐"],
+    answer: "百済",
+    explanation: "大和政権は百済（くだら）と結び、新羅（しらぎ）と戦いました。この関係の中で仏教や漢字が日本に伝わっていきます。"
+  },
+  // ===== 大問4 =====
+  {
+    id: 15,
+    section: "大問4",
+    text: "古墳のまわりにおかれた、当時の人々の生活のようすをかたどった素焼きの土器を何といいますか？",
+    type: "text",
+    answer: "埴輪",
+    hint: "漢字2文字。読み方は「はにわ」",
+    explanation: "埴輪（はにわ）は古墳のまわりに並べられた素焼きの土器。人物・家・馬などの形があり、当時の生活を知る手がかりになっています。"
+  },
+  // ===== 大問5 =====
+  {
+    id: 16,
+    section: "大問5",
+    text: "大和政権のもとにつくられた鉄剣が出土した、埼玉県行田市にある古墳の名前は何ですか？",
+    type: "text",
+    answer: "稲荷山古墳",
+    hint: "漢字5文字。「いなり」という神社と同じ読み方",
+    explanation: "稲荷山（いなりやま）古墳から出土した鉄剣には「ワカタケル大王」の名前が刻まれていました。"
+  },
+  {
+    id: 17,
+    section: "大問5",
+    text: "稲荷山古墳の鉄剣に刻まれていた大王の名前を、カタカナで答えなさい。",
+    type: "text",
+    answer: "ワカタケル",
+    hint: "カタカナ5文字。雄略天皇のことといわれている",
+    explanation: "「ワカタケル大王」は雄略天皇と考えられています。同じ名前が熊本県の江田船山古墳の鉄剣にも刻まれており、大和政権の支配が関東から九州まで広がっていたことがわかります。"
+  },
+  {
+    id: 18,
+    section: "大問5",
+    text: "「ワカタケル」と刻まれた鉄剣が、埼玉県と熊本県の両方から出土していることから、何がわかりますか？正しいものを選びなさい。",
+    type: "choice",
+    choices: [
+      "大和政権の支配が関東地方から九州地方にまでおよんでいた",
+      "鉄剣は中国から輸入されていた",
+      "大和政権は朝鮮半島を支配していた",
+      "ワカタケルは埼玉と熊本に住んでいた"
+    ],
+    answer: "大和政権の支配が関東地方から九州地方にまでおよんでいた",
+    explanation: "同じ「ワカタケル大王」の名が刻まれた鉄剣が東（埼玉県）と西（熊本県）から出たことで、大和政権の支配が広大な範囲に及んでいたと証明されました。"
+  }
+];
+
+// ==============================
+// 状態管理
+// ==============================
+let questions = [];
+let currentIndex = 0;
+let correctCount = 0;
+let wrongCount = 0;
+let answered = false;
+let results = [];
+
+function startQuiz(questionSet) {
+  questions = questionSet || [...ALL_QUESTIONS];
+  currentIndex = 0;
+  correctCount = 0;
+  wrongCount = 0;
+  results = [];
+  answered = false;
+
+  document.getElementById('intro-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+
+  updateScore();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentIndex];
+  answered = false;
+
+  // カードアニメーション
+  const card = document.getElementById('quiz-card');
+  card.classList.remove('pop');
+  void card.offsetWidth;
+  card.classList.add('pop');
+
+  // バッジ・番号
+  document.getElementById('q-badge').textContent = q.section;
+  document.getElementById('q-number').textContent = `問${currentIndex + 1} / ${questions.length}`;
+  document.getElementById('q-text').textContent = q.text;
+
+  // フィードバッククリア
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+
+  // 次へボタン非表示
+  document.getElementById('next-btn').style.display = 'none';
+
+  // 選択肢 or テキスト入力
+  const choicesWrap = document.getElementById('choices-wrap');
+  const textWrap = document.getElementById('text-input-wrap');
+
+  if (q.type === 'choice') {
+    textWrap.style.display = 'none';
+    choicesWrap.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'choices';
+    // シャッフル
+    const shuffled = [...q.choices].sort(() => Math.random() - 0.5);
+    shuffled.forEach(choice => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = choice;
+      btn.onclick = () => selectChoice(btn, choice, q);
+      div.appendChild(btn);
+    });
+    choicesWrap.appendChild(div);
+  } else {
+    choicesWrap.innerHTML = '';
+    textWrap.style.display = 'block';
+    const input = document.getElementById('text-answer');
+    input.value = '';
+    input.className = '';
+    input.disabled = false;
+    input.placeholder = 'ここに答えを入力…';
+    // ヒントボタンのリセット
+    const hintBtn = document.getElementById('hint-btn');
+    const hintReveal = document.getElementById('hint-reveal');
+    hintReveal.textContent = '';
+    hintReveal.classList.remove('show');
+    if (q.hint) {
+      hintBtn.style.display = 'inline-flex';
+      hintBtn.disabled = false;
+      hintBtn.textContent = '💡 ヒントを見る';
+    } else {
+      hintBtn.style.display = 'none';
+    }
+    document.getElementById('submit-btn').disabled = false;
+    setTimeout(() => input.focus(), 100);
+
+    input.onkeydown = (e) => {
+      if (e.key === 'Enter') submitText();
+    };
+  }
+
+  updateProgress();
+}
+
+function selectChoice(btn, choice, q) {
+  if (answered) return;
+  answered = true;
+
+  const isCorrect = (choice === q.answer);
+  if (isCorrect) correctCount++;
+  else wrongCount++;
+
+  results.push({ q, isCorrect, userAnswer: choice });
+  updateScore();
+
+  // ボタンスタイル更新
+  const allBtns = document.querySelectorAll('.choice-btn');
+  allBtns.forEach(b => {
+    b.disabled = true;
+    if (b.textContent === q.answer) {
+      b.classList.add('show-correct');
+      b.innerHTML += '<span class="choice-icon">✅</span>';
+    }
+  });
+  if (!isCorrect) {
+    btn.className = 'choice-btn selected-wrong';
+    btn.innerHTML = btn.textContent.replace('<span class="choice-icon">✅</span>','') + '<span class="choice-icon">❌</span>';
+  }
+
+  showFeedback(isCorrect, q);
+}
+
+function showHint() {
+  const q = questions[currentIndex];
+  const hintBtn = document.getElementById('hint-btn');
+  const hintReveal = document.getElementById('hint-reveal');
+  hintReveal.textContent = `💡 ヒント：${q.hint}`;
+  hintReveal.classList.add('show');
+  hintBtn.disabled = true;
+  hintBtn.textContent = '💡 ヒントを見た';
+}
+
+function submitText() {
+  if (answered) return;
+  const q = questions[currentIndex];
+  const input = document.getElementById('text-answer');
+  const userAns = input.value.trim();
+  if (!userAns) {
+    input.style.borderColor = 'orange';
+    setTimeout(() => input.style.borderColor = '', 500);
+    return;
+  }
+
+  answered = true;
+  document.getElementById('submit-btn').disabled = true;
+  input.disabled = true;
+
+  // 正誤判定（ひらがな・カタカナ・漢字を正規化）
+  const normalize = s => s.replace(/\s/g,'').toLowerCase();
+  const isCorrect = normalize(userAns) === normalize(q.answer);
+
+  if (isCorrect) {
+    correctCount++;
+    input.className = 'correct';
+  } else {
+    wrongCount++;
+    input.className = 'wrong';
+  }
+
+  results.push({ q, isCorrect, userAnswer: userAns });
+  updateScore();
+  showFeedback(isCorrect, q);
+}
+
+function showFeedback(isCorrect, q) {
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback ' + (isCorrect ? 'correct' : 'wrong') + ' show';
+  fb.innerHTML = `
+    <div class="answer-line">${isCorrect ? '🎉 正解！' : `❌ 不正解… 正解は「${q.answer}」`}</div>
+    <div class="explain-line">📖 ${q.explanation}</div>
+  `;
+  document.getElementById('next-btn').style.display = 'block';
+}
+
+function nextQuestion() {
+  if (currentIndex + 1 >= questions.length) {
+    showResult();
+  } else {
+    currentIndex++;
+    renderQuestion();
+  }
+}
+
+function updateProgress() {
+  const pct = (currentIndex / questions.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${currentIndex}/${questions.length}`;
+}
+
+function updateScore() {
+  document.getElementById('correct-count').textContent = correctCount;
+  document.getElementById('wrong-count').textContent = wrongCount;
+}
+
+function showResult() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const rs = document.getElementById('result-screen');
+  rs.style.display = 'block';
+
+  const total = questions.length;
+  const pct = correctCount / total;
+
+  // 絵文字・メッセージ
+  let emoji, stars, msg;
+  if (pct >= 0.9) {
+    emoji = '🏆'; stars = '⭐⭐⭐';
+    msg = 'すごい！ほぼ満点！完璧な理解だね！このままのペースで頑張ろう✨';
+  } else if (pct >= 0.7) {
+    emoji = '😄'; stars = '⭐⭐';
+    msg = 'よくできました！あと少しで満点。間違えた問題をもう一度確認しよう！';
+  } else if (pct >= 0.5) {
+    emoji = '😊'; stars = '⭐';
+    msg = 'がんばった！半分以上正解できたよ。間違えた問題を復習して再チャレンジしよう！';
+  } else {
+    emoji = '💪'; stars = '';
+    msg = 'まだ覚えていない部分があるね。焦らず一つずつ確認していこう！再挑戦してみよう。';
+  }
+
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-stars').textContent = stars;
+  document.getElementById('result-score').innerHTML = `${correctCount}<span> / ${total}問正解</span>`;
+  document.getElementById('result-msg').textContent = msg;
+
+  // 結果テーブル
+  const tbody = document.getElementById('result-tbody');
+  tbody.innerHTML = '';
+  results.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    const shortQ = r.q.text.length > 22 ? r.q.text.slice(0,22) + '…' : r.q.text;
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${shortQ}</td>
+      <td class="${r.isCorrect ? 'ok' : 'bad'}">${r.isCorrect ? '✅ 正解' : '❌ ' + r.q.answer}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // 間違いのみ再挑戦ボタン
+  const wrongOnes = results.filter(r => !r.isCorrect);
+  document.getElementById('review-btn').style.display = wrongOnes.length > 0 ? 'block' : 'none';
+}
+
+function restartQuiz() {
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('intro-screen').style.display = 'block';
+}
+
+function reviewWrong() {
+  const wrongQuestions = results.filter(r => !r.isCorrect).map(r => r.q);
+  if (wrongQuestions.length > 0) {
+    startQuiz(wrongQuestions);
+  }
+}
+</script>
+</body>
+</html>
